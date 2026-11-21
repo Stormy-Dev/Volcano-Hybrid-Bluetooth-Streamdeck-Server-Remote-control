@@ -1,3 +1,8 @@
 @echo off
-rem Startet den Volcano-Server unsichtbar im Hintergrund (ohne Konsolenfenster)
-start "" pyw -3.14 C:\volcano\volcano_server.py
+rem Starts volcano_server.py in the background (no console window).
+where pyw >nul 2>nul
+if %errorlevel%==0 (
+    start "" /D "%~dp0" pyw "%~dp0volcano_server.py"
+) else (
+    start "" /D "%~dp0" pythonw "%~dp0volcano_server.py"
+)
