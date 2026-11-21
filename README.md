@@ -1,19 +1,27 @@
 # volcano-remote
 
+[![Download ZIP](https://img.shields.io/badge/Download-ZIP-e8762b?style=for-the-badge)](https://github.com/USER/REPO/archive/refs/heads/main.zip)
+
 Remote control for the Volcano Hybrid via plain HTTP GET requests, so you can trigger it from a Stream Deck, a foot pedal, or anything else that can call a URL.
 
 Keeps a persistent Bluetooth connection to the Volcano Hybrid and accepts commands at `http://127.0.0.1:8765/<command>`. The server is only reachable locally.
 
-## Requirements
+## Installation (Windows)
 
-- Python 3.10+
-- [`storzandbickel_ble`](https://pypi.org/project/storzandbickel-ble/)
+1. Download the ZIP above and unzip it.
+2. Double-click `install.bat`. It uses an existing Python 3.14 or 3.15 or installs Python 3.14 through the official Python install manager, sets up a virtual environment in `.venv`, installs the dependencies and starts the server.
+3. Double-click `stream-deck/VolcanoRemote.streamDeckAction` to import the Stream Deck buttons.
 
-## Running
+From then on, start the server with the "Start Server" button or by double-clicking `volcano_start.bat`. Running `install.bat` again is safe; it repairs the setup if something broke.
 
-On Windows, double-click `volcano_start.bat`. It starts the server in the background without a console window. Alternatively:
+Requires a PC with Bluetooth LE.
+
+### Manual installation
+
+Requires Python 3.14 or newer and uses [`storzandbickel-ble`](https://pypi.org/project/storzandbickel-ble/).
 
 ```
+pip install -r requirements.txt
 python volcano_server.py
 ```
 
@@ -21,9 +29,11 @@ Logs are written to `volcano_server.log` next to the script. Starting the server
 
 ## Stream Deck
 
-A ready-made Stream Deck folder is included in `stream-deck/VolcanoRemote.streamDeckAction`. Double-click it to import. It only uses built-in Stream Deck actions, so no plugins are needed. The layout is made for the Stream Deck XL.
+A ready-made Stream Deck folder is included in `stream-deck/VolcanoRemote.streamDeckAction`. It only uses built-in Stream Deck actions, so no plugins are needed. The layout is made for the Stream Deck XL.
 
-Start the server once by hand. From then on, the "Start Server" button works too: on every start, the server writes a launcher to `C:\ProgramData\VolcanoRemote\volcano_start.bat` that points to the script's current location, and the button runs that launcher. If Windows is not installed on `C:`, adjust the button's path after importing.
+All button labels are Stream Deck titles, so you can change or translate them in the Stream Deck app. The icons in `volcano_icons/` contain no text.
+
+The "Start Server" button works once the server has been started by hand: on every start, the server writes a launcher to `C:\ProgramData\VolcanoRemote\volcano_start.bat` that points to the script's current location, and the button runs that launcher. If Windows is not installed on `C:`, adjust the button's path after importing.
 
 ## Commands
 
@@ -61,3 +71,9 @@ Settings are at the top of `volcano_server.py`:
 | `COMMAND_TIMEOUT` | `10` | Seconds before a single Bluetooth command is given up |
 | `BLOCK_BROWSER_REQUESTS` | `True` | Reject requests that a website triggered in your browser |
 | `LAUNCHER` | `C:\ProgramData\VolcanoRemote\volcano_start.bat` | Launcher for the Stream Deck button, Windows only (`None` = don't create one) |
+
+## License
+
+MIT, see [LICENSE](LICENSE).
+
+This is an unofficial project and is not affiliated with or endorsed by Storz & Bickel. Volcano and Volcano Hybrid are trademarks of their respective owner.
