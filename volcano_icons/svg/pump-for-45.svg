@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" width="288" height="288"><defs><radialGradient id="g" cx="50%" cy="38%" r="75%">
+<stop offset="0" stop-color="#0f3a52"/><stop offset="1" stop-color="#0a141c"/></radialGradient></defs>
+<rect width="144" height="144" fill="url(#g)"/><g transform="translate(72,40) scale(0.62) translate(-72,-56)"><g transform="translate(0,0)">
+<path d="M28 42 H86 A13 13 0 1 0 73 29" fill="none" stroke="#5fd3ff" stroke-width="8" stroke-linecap="round"/>
+<path d="M28 58 H104 A13 13 0 1 1 91 71" fill="none" stroke="#5fd3ff" stroke-width="8" stroke-linecap="round"/>
+<path d="M28 74 H66 A11 11 0 1 1 55 85" fill="none" stroke="#5fd3ff" stroke-width="8" stroke-linecap="round"/></g></g><g transform="translate(72,0)">
+<rect x="-34" y="84" width="68" height="0" fill="none"/></g>
+<text x="84" y="104" text-anchor="end" font-family="Inter, DejaVu Sans, sans-serif" font-weight="900" font-size="34" fill="#fff">45</text><text x="86" y="104" font-family="Inter, DejaVu Sans, sans-serif" font-weight="800" font-size="22" fill="#5fd3ff">s</text><text x="72" y="131" text-anchor="middle" font-family="Inter, DejaVu Sans, sans-serif" font-weight="800" font-size="15" letter-spacing="1.5" fill="#5fd3ff">PUMPE</text></svg>
