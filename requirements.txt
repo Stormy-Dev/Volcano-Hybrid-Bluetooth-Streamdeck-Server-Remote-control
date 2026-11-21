@@ -1,1 +1,1 @@
-storzandbickel-ble==0.1.25
+storzandbickel-ble==0.1.2
