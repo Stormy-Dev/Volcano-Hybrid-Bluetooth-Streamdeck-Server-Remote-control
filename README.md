@@ -11,7 +11,9 @@ Keeps a persistent Bluetooth connection to the Volcano Hybrid and accepts comman
 
 ## Running
 
-    python volcano_server.py
+```
+python volcano_server.py
+```
 
 On Windows you can use `pythonw volcano_server.py` to run it without a console window. Logs are written to `volcano_server.log` next to the script.
 
@@ -27,11 +29,13 @@ On Windows you can use `pythonw volcano_server.py` to run it without a console w
 | `/all-off` | Turn off heater and pump |
 | `/status` | Current state as JSON |
 
-Every command responds with the current state as JSON.
+Every command responds with the current state as JSON. If the Volcano is not connected, commands return 503 immediately while the server reconnects in the background.
 
 Example:
 
-    curl http://127.0.0.1:8765/temp/185
+```
+curl http://127.0.0.1:8765/temp/185
+```
 
 ## Configuration
 
@@ -43,4 +47,8 @@ Settings are at the top of `volcano_server.py`:
 | `DEVICE_NAME` | `S&B VOLCANO` | Bluetooth name of the device |
 | `TEMP_STEP` | `5` | °C per step for `/temp-up` and `/temp-down` |
 | `PUMP_AUTO_OFF` | `90` | Pump turns off after this many seconds when started via `/pump-on` or `/pump-toggle` (`None` = never) |
-| `PUMP_FOR_MAX` | `120` | Upper limit in seconds for
+| `PUMP_FOR_MAX` | `120` | Upper limit in seconds for `/pump-for` |
+| `RECONNECT_EVERY` | `20` | Seconds between background connection checks |
+| `CONNECT_TIMEOUT` | `20` | Seconds before a connection attempt is given up |
+| `COMMAND_TIMEOUT` | `10` | Seconds before a single Bluetooth command is given up |
+| `BLOCK_BROWSER_REQUESTS` | `True` | Reject requests that a website triggered in your browser |
