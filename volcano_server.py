@@ -22,7 +22,8 @@ from http import HTTPStatus
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from storzandbickel_ble import StorzBickelClient
+from bleak import BleakClient, BleakScanner
+from storzandbickel_ble.volcano import VolcanoDevice
 from storzandbickel_ble.protocol import (
     VOLCANO_CHAR_CURRENT_TEMP,
     VOLCANO_CHAR_STATUS_REGISTER_1,
@@ -41,8 +42,8 @@ TEMP_STEP = 5            # °C per press for temp-up / temp-down
 PUMP_AUTO_OFF = 90       # seconds; pump is switched off after this at the latest (None = never)
 PUMP_FOR_MAX = 120       # upper limit for /pump-for/<seconds>
 RECONNECT_EVERY = 20     # seconds between connection checks in the background
-SCAN_TIME = 15           # seconds the Bluetooth scan runs; the library also uses it as the connect timeout, Windows needs >10 s
-CONNECT_TIMEOUT = 60     # seconds before a whole connection attempt (scan + connect) is given up
+SCAN_TIME = 20           # max. seconds to search for the Volcano; the search stops as soon as it is found
+CONNECT_TIMEOUT = 40     # seconds before connecting (after the Volcano was found) is given up
 COMMAND_TIMEOUT = 10     # seconds before a single Bluetooth command is given up
 POLL_EVERY = 5           # seconds between light background checks of pump/heater state
 STATE_TRUST = 10         # seconds a known pump/heater state is used without asking the Volcano again
@@ -96,7 +97,7 @@ def _clamp_temp(value: float) -> float:
 
 class Volcano:
     def __init__(self) -> None:
-        self.client = StorzBickelClient()
+        self._use_cache = True        # let Windows reuse the device layout it learned last time
         self.dev = None
         self.lock = asyncio.Lock()
         self.pump_timer: asyncio.Task | None = None
@@ -107,18 +108,39 @@ class Volcano:
     # ---------- Connection ----------
     async def _connect(self) -> None:
         log.info("Connecting to %s ...", DEVICE_NAME)
-        dev = await asyncio.wait_for(
-            self.client.connect_by_name(DEVICE_NAME, timeout=SCAN_TIME), CONNECT_TIMEOUT
+        started = time.monotonic()
+        # The library's own scan always runs for its full timeout and then uses that same
+        # value as the connect timeout. Searching here stops as soon as the Volcano shows up.
+        name = DEVICE_NAME.upper()
+        ble = await BleakScanner.find_device_by_filter(
+            lambda d, ad: name in (ad.local_name or d.name or "").upper(), timeout=SCAN_TIME
         )
-        if dev is None:
+        if ble is None:
             raise ConnectionError("device not found")
+        found = time.monotonic()
+        client = BleakClient(
+            ble, timeout=CONNECT_TIMEOUT, winrt={"use_cached_services": self._use_cache}
+        )
+        dev = VolcanoDevice(ble.address, client=client, name=ble.name)
         try:
-            await asyncio.wait_for(dev.update_state(), COMMAND_TIMEOUT)
+            # connects, reads the full state once and subscribes to updates
+            await asyncio.wait_for(dev.connect(), CONNECT_TIMEOUT)
         except BaseException:
-            await self._drop(dev)
+            if self._use_cache:
+                log.info("Connecting with the Windows cache failed, next attempt reads the device fresh.")
+                self._use_cache = None
+                self._wake.set()  # retry right away instead of waiting RECONNECT_EVERY
+            try:
+                await asyncio.wait_for(client.disconnect(), 5)
+            except Exception:
+                pass
             raise
+        log.info(
+            "Found after %.1f s, connected after %.1f s (Windows cache: %s).",
+            found - started, time.monotonic() - started, "yes" if self._use_cache else "no",
+        )
         self.dev = dev
-        self._state_at = time.monotonic()  # update_state() above just read pump and heater
+        self._state_at = time.monotonic()  # dev.connect() above just read pump and heater
         log.info("Connected.")
 
     async def _drop(self, dev) -> None:
