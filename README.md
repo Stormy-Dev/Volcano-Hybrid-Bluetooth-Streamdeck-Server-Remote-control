@@ -67,7 +67,8 @@ Settings are at the top of `volcano_server.py`:
 | `PUMP_AUTO_OFF` | `90` | Pump turns off after this many seconds when started via `/pump-on` or `/pump-toggle` (`None` = never) |
 | `PUMP_FOR_MAX` | `120` | Upper limit in seconds for `/pump-for` |
 | `RECONNECT_EVERY` | `20` | Seconds between background connection checks |
-| `CONNECT_TIMEOUT` | `20` | Seconds before a connection attempt is given up |
+| `SCAN_TIME` | `5` | Seconds the Bluetooth scan for the Volcano runs (raise to 8–10 if it is not found reliably) |
+| `CONNECT_TIMEOUT` | `45` | Seconds before a whole connection attempt (scan + connect) is given up |
 | `COMMAND_TIMEOUT` | `10` | Seconds before a single Bluetooth command is given up |
 | `BLOCK_BROWSER_REQUESTS` | `True` | Reject requests that a website triggered in your browser |
 | `LAUNCHER` | `C:\ProgramData\VolcanoRemote\volcano_start.bat` | Launcher for the Stream Deck button, Windows only (`None` = don't create one) |

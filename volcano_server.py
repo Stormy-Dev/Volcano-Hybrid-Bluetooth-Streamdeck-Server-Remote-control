@@ -31,7 +31,8 @@ TEMP_STEP = 5            # °C per press for temp-up / temp-down
 PUMP_AUTO_OFF = 90       # seconds; pump is switched off after this at the latest (None = never)
 PUMP_FOR_MAX = 120       # upper limit for /pump-for/<seconds>
 RECONNECT_EVERY = 20     # seconds between connection checks in the background
-CONNECT_TIMEOUT = 20     # seconds before a connection attempt is given up
+SCAN_TIME = 5            # seconds the Bluetooth scan for the Volcano runs
+CONNECT_TIMEOUT = 45     # seconds before a whole connection attempt (scan + connect) is given up
 COMMAND_TIMEOUT = 10     # seconds before a single Bluetooth command is given up
 BLOCK_BROWSER_REQUESTS = True  # reject requests that a website triggered in your browser
 # Windows only: launcher the Stream Deck "Start Server" button runs (None = don't create one).
@@ -92,7 +93,7 @@ class Volcano:
     async def _connect(self) -> None:
         log.info("Connecting to %s ...", DEVICE_NAME)
         dev = await asyncio.wait_for(
-            self.client.connect_by_name(DEVICE_NAME), CONNECT_TIMEOUT
+            self.client.connect_by_name(DEVICE_NAME, timeout=SCAN_TIME), CONNECT_TIMEOUT
         )
         if dev is None:
             raise ConnectionError("device not found")
