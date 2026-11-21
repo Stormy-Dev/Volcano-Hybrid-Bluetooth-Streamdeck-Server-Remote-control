@@ -1,6 +1,6 @@
 # volcano-remote
 
-[![Download ZIP](https://img.shields.io/badge/Download-ZIP-e8762b?style=for-the-badge)](https://github.com/USER/REPO/archive/refs/heads/VolcanoStreamdeckRemote.zip)
+[![Download ZIP](https://img.shields.io/badge/Download-ZIP-e8762b?style=for-the-badge)](https://github.com/Stormy-Dev/Volcano-Hybrid-Bluetooth-Streamdeck-Server-Remote-control/archive/refs/heads/main.zip)
 
 Remote control for the Volcano Hybrid via plain HTTP GET requests, so you can trigger it from a Stream Deck, a foot pedal, or anything else that can call a URL.
 
