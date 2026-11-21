@@ -15,6 +15,7 @@ import asyncio
 import json
 import logging
 import math
+import os
 import sys
 from http import HTTPStatus
 from pathlib import Path
@@ -33,6 +34,9 @@ RECONNECT_EVERY = 20     # seconds between connection checks in the background
 CONNECT_TIMEOUT = 20     # seconds before a connection attempt is given up
 COMMAND_TIMEOUT = 10     # seconds before a single Bluetooth command is given up
 BLOCK_BROWSER_REQUESTS = True  # reject requests that a website triggered in your browser
+# Windows only: launcher the Stream Deck "Start Server" button runs (None = don't create one).
+# It is rewritten on every start, so it always points to wherever this script lives.
+LAUNCHER = Path(os.environ.get("PROGRAMDATA", r"C:\ProgramData")) / "VolcanoRemote" / "volcano_start.bat"
 # ------------------------------
 
 TEMP_MIN, TEMP_MAX = 40.0, 230.0
@@ -346,11 +350,42 @@ async def handle(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> 
         writer.close()
 
 
+def write_launcher() -> None:
+    """Writes a .bat at a fixed location that starts this script from wherever it
+    currently lives, so the Stream Deck button works without any path setup."""
+    if os.name != "nt" or LAUNCHER is None:
+        return
+    script = Path(__file__).resolve()
+    python = Path(sys.executable)
+    pythonw = python.with_name("pythonw.exe")
+    if pythonw.exists():
+        python = pythonw
+    content = (
+        "@echo off\r\n"
+        "rem Created by volcano_server.py on every start. Do not edit.\r\n"
+        f'start "" /D "{script.parent}" "{python}" "{script}"\r\n'
+    )
+    try:
+        # cmd.exe reads .bat files in the OEM code page, so umlauts in paths need it too
+        if LAUNCHER.exists() and LAUNCHER.read_bytes().decode("oem", errors="replace") == content:
+            return
+        LAUNCHER.parent.mkdir(parents=True, exist_ok=True)
+        LAUNCHER.write_text(content, encoding="oem", newline="")
+        log.info("Launcher written to %s", LAUNCHER)
+    except (OSError, UnicodeError) as e:
+        log.warning("Could not write launcher %s: %r", LAUNCHER, e)
+
+
 async def main() -> None:
     global VOLCANO
     VOLCANO = Volcano()
-    server = await asyncio.start_server(handle, HOST, PORT)
+    try:
+        server = await asyncio.start_server(handle, HOST, PORT)
+    except OSError as e:
+        log.info("Port %d is not available, the server is probably already running (%r).", PORT, e)
+        return
     log.info("Volcano server running at http://%s:%d", HOST, PORT)
+    write_launcher()
     keepalive = asyncio.create_task(VOLCANO.keepalive())  # keep a reference so it is not garbage collected
     try:
         async with server:
